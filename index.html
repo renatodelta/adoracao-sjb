@@ -60,6 +60,7 @@
     <!-- Admin Toolbar (visible only with ?admin=true) -->
     <div class="sjb-admin-bar" id="adminActionButtons" style="display: none;">
       <button id="shareWpBtn" class="sjb-btn sjb-btn-whatsapp">📱 Enviar Escala no WhatsApp</button>
+      <button id="printBtn" class="sjb-btn sjb-btn-outline-light">🖨️ Imprimir Escala</button>
       <button id="editQuoteBtn" class="sjb-btn sjb-btn-outline-light">✏️ Editar Frase</button>
       <button id="resetBtn" class="sjb-btn sjb-btn-danger-outline">🔄 Restaurar Horários</button>
     </div>
@@ -242,6 +243,34 @@
         <div class="modal-footer">
           <button type="button" class="sjb-btn sjb-btn-outline" id="cancelQuoteModalBtn">Cancelar</button>
           <button type="submit" class="sjb-btn sjb-btn-primary">Salvar Frase</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit Adorer Dialog (Admin Only) -->
+  <div class="modal-overlay" id="editAdorerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Editar Adorador (<span id="editAdorerSlotLabel"></span>)</h3>
+        <button class="close-btn" id="closeEditAdorerModalBtn">&times;</button>
+      </div>
+      <form id="editAdorerForm">
+        <div class="modal-body">
+          <input type="hidden" id="editAdorerTime">
+          <input type="hidden" id="editAdorerIndex">
+          <div class="form-group">
+            <label for="editAdorerName">Nome do Adorador *</label>
+            <input type="text" id="editAdorerName" required placeholder="Nome completo">
+          </div>
+          <div class="form-group">
+            <label for="editAdorerIntention">Pedido de Oração / Intenção (opcional)</label>
+            <textarea id="editAdorerIntention" rows="2" placeholder="Intenção de oração..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="sjb-btn sjb-btn-outline" id="cancelEditAdorerModalBtn">Cancelar</button>
+          <button type="submit" class="sjb-btn sjb-btn-primary">Salvar Alterações</button>
         </div>
       </form>
     </div>

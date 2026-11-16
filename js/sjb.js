@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedTimeSlot = null;
   let activeFilter = 'all';
 
-  // Admin Mode (?admin=true or ?admin=1)
+  // Admin Mode (?admin=true or ?admin=1 or /admin)
   const urlParams = new URLSearchParams(window.location.search);
-  const isAdmin = urlParams.get('admin') === 'true' || urlParams.get('admin') === '1';
+  const isAdmin = urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || window.location.pathname.includes('admin');
 
   // DOM Elements
   const dateInput = document.getElementById('adoracaoDate');
@@ -42,9 +42,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminActionButtons = document.getElementById('adminActionButtons');
   const editQuoteBtn = document.getElementById('editQuoteBtn');
   const shareWpBtn = document.getElementById('shareWpBtn');
+  const printBtn = document.getElementById('printBtn');
   const resetBtn = document.getElementById('resetBtn');
   const quoteTextEl = document.getElementById('quoteText');
   const quoteAuthorEl = document.getElementById('quoteAuthor');
+
+  // Edit Adorer Modal Elements
+  const editAdorerModal = document.getElementById('editAdorerModal');
+  const editAdorerSlotLabel = document.getElementById('editAdorerSlotLabel');
+  const editAdorerTime = document.getElementById('editAdorerTime');
+  const editAdorerIndex = document.getElementById('editAdorerIndex');
+  const editAdorerName = document.getElementById('editAdorerName');
+  const editAdorerIntention = document.getElementById('editAdorerIntention');
+  const closeEditAdorerModalBtn = document.getElementById('closeEditAdorerModalBtn');
+  const cancelEditAdorerModalBtn = document.getElementById('cancelEditAdorerModalBtn');
+  const editAdorerForm = document.getElementById('editAdorerForm');
 
   // Mobile Tabs
   const tabBtns = document.querySelectorAll('.sjb-tab-btn');
@@ -377,11 +389,14 @@ document.addEventListener('DOMContentLoaded', () => {
       detailAdorersList.innerHTML = adorers.map((a, idx) => `
         <span class="sjb-adorer-chip">
           👤 ${escapeHtml(a.name)}
-          ${isAdmin ? `<button type="button" class="sjb-remove-btn" data-time="${slot.time}" data-index="${idx}" title="Remover">&times;</button>` : ''}
+          ${isAdmin ? `<button type="button" class="sjb-edit-btn" data-time="${slot.time}" data-index="${idx}" title="Editar adorador">✏️</button><button type="button" class="sjb-remove-btn" data-time="${slot.time}" data-index="${idx}" title="Remover">&times;</button>` : ''}
         </span>
       `).join('');
 
       if (isAdmin) {
+        detailAdorersList.querySelectorAll('.sjb-edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => openEditAdorerModal(btn.dataset.time, btn.dataset.index));
+        });
         detailAdorersList.querySelectorAll('.sjb-remove-btn').forEach(btn => {
           btn.addEventListener('click', () => confirmRemoveAdorer(btn.dataset.time, btn.dataset.index));
         });
@@ -520,6 +535,79 @@ document.addEventListener('DOMContentLoaded', () => {
     generalIntentionText.value = '';
     renderIntentionsList();
   });
+
+  // Admin: Edit Adorer
+  function openEditAdorerModal(time, index) {
+    if (!scheduleData || !editAdorerModal) return;
+    const slot = scheduleData.slots.find(s => s.time === time);
+    const adorer = slot && slot.adorers ? slot.adorers[Number(index)] : null;
+    if (!adorer) return;
+
+    if (editAdorerSlotLabel) editAdorerSlotLabel.textContent = `${time}h`;
+    editAdorerTime.value = time;
+    editAdorerIndex.value = index;
+    editAdorerName.value = adorer.name || '';
+    editAdorerIntention.value = adorer.intention || '';
+    editAdorerModal.classList.add('active');
+    setTimeout(() => editAdorerName.focus(), 100);
+  }
+
+  function closeEditAdorerModal() {
+    if (editAdorerModal) editAdorerModal.classList.remove('active');
+  }
+
+  if (closeEditAdorerModalBtn) closeEditAdorerModalBtn.addEventListener('click', closeEditAdorerModal);
+  if (cancelEditAdorerModalBtn) cancelEditAdorerModalBtn.addEventListener('click', closeEditAdorerModal);
+  if (editAdorerModal) {
+    editAdorerModal.addEventListener('click', (e) => {
+      if (e.target === editAdorerModal) closeEditAdorerModal();
+    });
+  }
+
+  if (editAdorerForm) {
+    editAdorerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const time = editAdorerTime.value;
+      const index = Number(editAdorerIndex.value);
+      const name = editAdorerName.value.trim();
+      const intention = editAdorerIntention.value.trim();
+      if (!name) return;
+
+      try {
+        const response = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'edit_adorer',
+            type: SCHEDULE_TYPE,
+            date: currentDate,
+            time,
+            index,
+            name,
+            intention
+          })
+        });
+
+        if (response.ok) {
+          const json = await response.json();
+          scheduleData = json.data;
+        } else {
+          throw new Error('Fallback local edit');
+        }
+      } catch (err) {
+        editLocalStorageAdorer(currentDate, time, index, name, intention);
+      }
+
+      closeEditAdorerModal();
+      renderUI();
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
 
   // Admin: Remove Adorer
   async function confirmRemoveAdorer(time, index) {
@@ -716,6 +804,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const slot = data.slots.find(s => s.time === time);
     if (slot && slot.adorers) {
       slot.adorers.splice(index, 1);
+      localStorage.setItem(`cerco_sjb_${dateStr}`, JSON.stringify(data));
+      scheduleData = data;
+    }
+  }
+
+  function editLocalStorageAdorer(dateStr, time, index, name, intention) {
+    const data = getLocalStorageData(dateStr);
+    const slot = data.slots.find(s => s.time === time);
+    if (slot && slot.adorers && slot.adorers[index]) {
+      slot.adorers[index].name = name;
+      slot.adorers[index].intention = intention;
       localStorage.setItem(`cerco_sjb_${dateStr}`, JSON.stringify(data));
       scheduleData = data;
     }

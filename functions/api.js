@@ -151,6 +151,33 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ status: 'success', message: 'Adorador removido com sucesso!', data }), { headers: CORS_HEADERS });
     }
 
+    if (action === 'edit_adorer') {
+      const { time, index, name, intention } = body;
+      const idx = parseInt(index, 10) || 0;
+      const cleanName = (name || '').trim();
+
+      if (!cleanName || !time) {
+        return new Response(JSON.stringify({ status: 'error', message: 'Nome e horário são obrigatórios.' }), { headers: CORS_HEADERS });
+      }
+
+      let updated = false;
+      for (let slot of data.slots) {
+        if (slot.time === time && slot.adorers && slot.adorers[idx]) {
+          slot.adorers[idx].name = cleanName;
+          slot.adorers[idx].intention = intention ? intention.trim() : '';
+          slot.adorers[idx].updated_at = new Date().toISOString();
+          updated = true;
+          break;
+        }
+      }
+
+      if (updated) {
+        await saveData(date, data);
+        return new Response(JSON.stringify({ status: 'success', message: 'Adorador atualizado com sucesso!', data }), { headers: CORS_HEADERS });
+      }
+      return new Response(JSON.stringify({ status: 'error', message: 'Adorador não encontrado.' }), { headers: CORS_HEADERS });
+    }
+
     if (action === 'reset_day') {
       data.slots = getCercoJericoSlots();
       await saveData(date, data);

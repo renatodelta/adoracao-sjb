@@ -161,6 +161,38 @@ if ($method === 'POST') {
         exit;
     }
 
+    if ($action === 'edit_adorer') {
+        $time = isset($input['time']) ? $input['time'] : '';
+        $index = isset($input['index']) ? intval($input['index']) : 0;
+        $name = trim(isset($input['name']) ? $input['name'] : '');
+        $intention = trim(isset($input['intention']) ? $input['intention'] : '');
+
+        if (empty($name) || empty($time)) {
+            echo json_encode(["status" => "error", "message" => "Nome e horário são obrigatórios."]);
+            exit;
+        }
+
+        $updated = false;
+        foreach ($data['slots'] as &$slot) {
+            if ($slot['time'] === $time && isset($slot['adorers'][$index])) {
+                $slot['adorers'][$index]['name'] = $name;
+                $slot['adorers'][$index]['intention'] = $intention;
+                $slot['adorers'][$index]['updated_at'] = date('c');
+                $updated = true;
+                break;
+            }
+        }
+
+        if ($updated) {
+            $data['last_updated'] = date('c');
+            file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode(["status" => "success", "message" => "Adorador atualizado com sucesso!", "data" => $data]);
+        } else {
+            echo json_encode(["status" => "error", "message" => "Adorador não encontrado."]);
+        }
+        exit;
+    }
+
     if ($action === 'reset_day') {
         $data['slots'] = getCercoJericoSlots();
         $data['last_updated'] = date('c');
