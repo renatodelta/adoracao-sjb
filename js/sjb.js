@@ -2,6 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const SCHEDULE_TYPE = 'sjb';
+  const CERCO_START_DATE = '2026-11-15';
+  const CERCO_END_DATE = '2026-11-22';
   const CERCO_DAYS = [
     { date: '2026-11-15', label: '15/11 (Dom)' },
     { date: '2026-11-16', label: '16/11 (Seg)' },
@@ -25,7 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const dateInput = document.getElementById('adoracaoDate');
   const cercoDaysBar = document.getElementById('cercoDaysBar');
+  const filterBar = document.getElementById('filterBar');
   const slotsList = document.getElementById('slotsList');
+  const slotDetailPanel = document.getElementById('slotDetailPanel');
+  const outOfPeriodNotice = document.getElementById('outOfPeriodNotice');
+  const outOfPeriodDateLabel = document.getElementById('outOfPeriodDateLabel');
+  const returnToCercoBtn = document.getElementById('returnToCercoBtn');
   const progressFill = document.getElementById('progressFill');
   const statsCount = document.getElementById('statsCount');
   const alertBanner = document.getElementById('alertBanner');
@@ -153,6 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Date Picker
+  dateInput.min = CERCO_START_DATE;
+  dateInput.max = CERCO_END_DATE;
   dateInput.value = currentDate;
   dateInput.addEventListener('change', (e) => {
     currentDate = e.target.value;
@@ -161,7 +170,55 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSchedule(currentDate);
   });
 
+  if (returnToCercoBtn) {
+    returnToCercoBtn.addEventListener('click', () => {
+      currentDate = getInitialCercoDate();
+      dateInput.value = currentDate;
+      selectedTimeSlot = null;
+      renderDaysStrip();
+      loadSchedule(currentDate);
+    });
+  }
+
+  function isCercoDate(dateStr) {
+    return Boolean(dateStr && dateStr >= CERCO_START_DATE && dateStr <= CERCO_END_DATE);
+  }
+
+  function renderOutOfPeriodState(dateStr) {
+    if (outOfPeriodNotice) outOfPeriodNotice.style.display = 'flex';
+    if (outOfPeriodDateLabel) {
+      outOfPeriodDateLabel.textContent = dateStr ? formatDateBR(dateStr) : 'não informada';
+    }
+    if (filterBar) filterBar.style.display = 'none';
+    if (slotsList) {
+      slotsList.innerHTML = '';
+      slotsList.style.display = 'none';
+    }
+    if (slotDetailPanel) slotDetailPanel.style.display = 'none';
+    if (alertBanner) alertBanner.style.display = 'none';
+    if (statsCount) statsCount.textContent = '0/24';
+    if (progressFill) progressFill.style.width = '0%';
+    if (intentionsDateLabel) {
+      intentionsDateLabel.textContent = dateStr ? formatDateBR(dateStr) : 'fora do período';
+    }
+    if (intentionsCountBadge) intentionsCountBadge.textContent = '0';
+    if (intentionsList) {
+      intentionsList.innerHTML = '<div class="sjb-empty-intentions">Fora do período do Cerco de Jericó (15/11 a 22/11).</div>';
+    }
+  }
+
   async function loadSchedule(dateStr) {
+    if (!isCercoDate(dateStr)) {
+      scheduleData = null;
+      renderOutOfPeriodState(dateStr);
+      return;
+    }
+
+    if (outOfPeriodNotice) outOfPeriodNotice.style.display = 'none';
+    if (filterBar) filterBar.style.display = 'flex';
+    if (slotsList) slotsList.style.display = 'grid';
+    if (slotDetailPanel) slotDetailPanel.style.display = 'block';
+
     slotsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 36px; color: var(--text-muted);">Carregando horários...</div>';
 
     try {

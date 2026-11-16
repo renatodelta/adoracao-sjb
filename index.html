@@ -42,7 +42,7 @@
 
         <div class="sjb-date-pill">
           <label for="adoracaoDate">📅</label>
-          <input type="date" id="adoracaoDate" aria-label="Data da Adoração">
+          <input type="date" id="adoracaoDate" min="2026-11-15" max="2026-11-22" aria-label="Data da Adoração">
         </div>
 
         <div class="sjb-coverage-pill" title="Cobertura dos horários">
@@ -130,8 +130,16 @@
       <!-- Alert Banner when hours are missing -->
       <div id="alertBanner" class="sjb-alert-banner" style="display: none;"></div>
 
+      <!-- Out of Cerco Period Notice -->
+      <section id="outOfPeriodNotice" class="sjb-card sjb-out-of-period" style="display: none;">
+        <span class="sjb-detail-icon">📅</span>
+        <h3>Fora do período do Cerco de Jericó</h3>
+        <p>A adoração do Cerco de Jericó acontece somente entre os dias <strong>15/11/2026 e 22/11/2026</strong>. A data selecionada (<strong id="outOfPeriodDateLabel"></strong>) está fora desse período.</p>
+        <button type="button" class="sjb-btn sjb-btn-primary" id="returnToCercoBtn">🕊️ Voltar para o Cerco de Jericó</button>
+      </section>
+
       <!-- Filter Bar -->
-      <div class="sjb-filter-bar">
+      <div class="sjb-filter-bar" id="filterBar">
         <div class="sjb-filter-group" role="tablist" aria-label="Filtrar horários">
           <button type="button" class="sjb-filter-pill active" data-filter="all">Todos</button>
           <button type="button" class="sjb-filter-pill" data-filter="empty">Precisa de Adorador</button>

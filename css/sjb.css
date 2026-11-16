@@ -872,6 +872,30 @@ body {
   color: var(--text-dark);
 }
 
+.sjb-out-of-period {
+  text-align: center;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sjb-out-of-period h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  color: var(--bocaina-deep);
+  margin: 0;
+}
+
+.sjb-out-of-period p {
+  max-width: 460px;
+  color: var(--text-muted);
+  font-size: 14.5px;
+  line-height: 1.55;
+  margin: 0 0 6px;
+}
+
 /* ==========================================================================
    Footer & Modals & Printable
    ========================================================================== */
