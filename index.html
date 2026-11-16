@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cerco de Jericó · Paróquia São José (São José do Barreiro)</title>
+  <meta name="description"
+    content="Cerco de Jericó — Adoração ao Santíssimo Sacramento (15 a 22 de Novembro) — Paróquia São José, São José do Barreiro - SP">
+  <meta name="theme-color" content="#0b224a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cerco de Jericó SJB">
+  <link rel="apple-touch-icon" href="assets/cerco-jerico-sjb.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/sjb.css">
+  <link rel="icon" href="assets/custodia2.jpg" type="image/jpeg">
+</head>
+
+<body>
+
+  <!-- Cerco de Jericó Top Bar -->
+  <header class="sjb-topbar">
+    <div class="sjb-topbar-inner">
+      <div class="sjb-brand">
+        <div class="sjb-avatar-wrap" id="openPosterBtn" title="Clique para ver o cartaz oficial">
+          <img src="assets/cerco-jerico-sjb.jpg" alt="Cartaz Cerco de Jericó - Paróquia São José" class="sjb-avatar">
+        </div>
+        <div class="sjb-brand-text">
+          <div class="sjb-eyebrow">⛪ Paróquia São José · São José do Barreiro — SP</div>
+          <h1 class="sjb-title">Cerco de Jericó</h1>
+          <p class="sjb-location">📅 15 a 22 de Novembro · O Santíssimo Sacramento ficará exposto <strong>Dia e Noite</strong></p>
+        </div>
+      </div>
+
+      <div class="sjb-topbar-controls">
+        <div id="adminHeaderBadge" style="display: none;" class="sjb-admin-pill">🔑 Modo Administrador</div>
+
+        <div class="sjb-date-pill">
+          <label for="adoracaoDate">📅</label>
+          <input type="date" id="adoracaoDate" aria-label="Data da Adoração">
+        </div>
+
+        <div class="sjb-coverage-pill" title="Cobertura dos horários">
+          <div class="sjb-coverage-top">
+            <span class="sjb-coverage-label">Cobertura</span>
+            <strong id="statsCount">0/24</strong>
+          </div>
+          <div class="sjb-progress-track">
+            <div class="sjb-progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Toolbar (visible only with ?admin=true) -->
+    <div class="sjb-admin-bar" id="adminActionButtons" style="display: none;">
+      <button id="shareWpBtn" class="sjb-btn sjb-btn-whatsapp">📱 Enviar Escala no WhatsApp</button>
+      <button id="editQuoteBtn" class="sjb-btn sjb-btn-outline-light">✏️ Editar Frase</button>
+      <button id="resetBtn" class="sjb-btn sjb-btn-danger-outline">🔄 Restaurar Horários</button>
+    </div>
+  </header>
+
+  <!-- Quick 8-Day Selector (15 a 22 de Novembro) -->
+  <section class="sjb-days-strip" aria-label="Dias do Cerco de Jericó">
+    <div class="sjb-days-inner" id="cercoDaysBar">
+      <!-- Populated via JS -->
+    </div>
+  </section>
+
+  <!-- Mobile Tab Switcher -->
+  <nav class="sjb-mobile-tabs" aria-label="Navegação">
+    <button type="button" class="sjb-tab-btn active" data-tab="schedule">🕒 Horários</button>
+    <button type="button" class="sjb-tab-btn" data-tab="intentions">🙏 Livro de Intenções <span class="sjb-tab-count" id="intentionsCountBadge">0</span></button>
+  </nav>
+
+  <!-- Main 2-Column Split Workspace -->
+  <main class="sjb-workspace">
+
+    <!-- LEFT COLUMN: Parchment Verses + Poster + Live Prayer Book -->
+    <aside class="sjb-sidebar sjb-panel" id="panelIntentions">
+
+      <!-- Parchment Verses Card -->
+      <section class="sjb-card sjb-quote-card">
+        <div class="sjb-scroll-verses">
+          <p class="sjb-quote-text" id="quoteText">“Eu e minha casa serviremos ao Senhor.” (Js 24,15)<br>“Buscai o Senhor enquanto Ele se deixa encontrar.” (Is 55,6)</p>
+          <span class="sjb-quote-author" id="quoteAuthor">— Cerco de Jericó · 15 a 22 de Novembro · Paróquia São José</span>
+        </div>
+      </section>
+
+      <!-- Always-Visible Prayer Book / Intentions -->
+      <section class="sjb-card sjb-prayer-book">
+        <div class="sjb-card-header">
+          <div>
+            <h2>🙏 Livro de Intenções</h2>
+            <p class="sjb-muted">Preces do Cerco de Jericó para <strong id="intentionsDateLabel">hoje</strong></p>
+          </div>
+        </div>
+
+        <div id="intentionsList" class="sjb-intentions-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <form id="addGeneralIntentionForm" class="sjb-intention-form">
+          <div class="sjb-form-title">Deixar uma intenção diante do Santíssimo</div>
+          <input type="text" id="generalIntentionName" placeholder="Seu nome (ou deixe em branco para Anônimo)">
+          <textarea id="generalIntentionText" rows="2" placeholder="Escreva seu pedido de oração..." required></textarea>
+          <button type="submit" class="sjb-btn sjb-btn-secondary sjb-btn-block">🕊️ Registrar Intenção</button>
+        </form>
+      </section>
+
+      <!-- Mini Poster Preview -->
+      <button type="button" class="sjb-poster-card" id="posterPreviewBtn" title="Ampliar cartaz oficial">
+        <img src="assets/cerco-jerico-sjb.jpg" alt="Cartaz Cerco de Jericó">
+        <div class="sjb-poster-caption">
+          <strong>📜 Cartaz Oficial</strong>
+          <span>Toque para ampliar</span>
+        </div>
+      </button>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: Visual 24h Slot Matrix + Inline Booking Drawer -->
+    <section class="sjb-main sjb-panel active" id="panelSchedule">
+
+      <!-- Alert Banner when hours are missing -->
+      <div id="alertBanner" class="sjb-alert-banner" style="display: none;"></div>
+
+      <!-- Filter Bar -->
+      <div class="sjb-filter-bar">
+        <div class="sjb-filter-group" role="tablist" aria-label="Filtrar horários">
+          <button type="button" class="sjb-filter-pill active" data-filter="all">Todos</button>
+          <button type="button" class="sjb-filter-pill" data-filter="empty">Precisa de Adorador</button>
+          <button type="button" class="sjb-filter-pill" data-filter="dawn">🌙 Madrugada (00h–05h)</button>
+          <button type="button" class="sjb-filter-pill" data-filter="filled">Preenchidos</button>
+        </div>
+        <span class="sjb-helper-hint">Toque em um horário para se inscrever</span>
+      </div>
+
+      <!-- Visual Grid of 24 Time Slots -->
+      <div class="sjb-slot-grid" id="slotsList">
+        <!-- Populated dynamically via JS -->
+      </div>
+
+      <!-- Inline Selected Slot Detail & Booking Panel -->
+      <section class="sjb-card sjb-detail-drawer" id="slotDetailPanel">
+        <div class="sjb-detail-empty" id="detailEmptyState">
+          <span class="sjb-detail-icon">🕯️</span>
+          <h3>Escolha um horário acima</h3>
+          <p>Clique em qualquer horário da grade para ver quem já está adorando ou confirmar a sua hora diante do Santíssimo.</p>
+        </div>
+
+        <div class="sjb-detail-active" id="detailActiveState" style="display: none;">
+          <div class="sjb-detail-header">
+            <div>
+              <span class="sjb-detail-eyebrow">Horário Selecionado · <span id="detailDateLabel"></span></span>
+              <h3 class="sjb-detail-time" id="detailSlotTime">00:00</h3>
+            </div>
+            <span class="sjb-status-badge" id="detailSlotBadge">Vago</span>
+          </div>
+
+          <div class="sjb-detail-adorers" id="detailAdorersList">
+            <!-- Populated dynamically -->
+          </div>
+
+          <!-- Success Notice -->
+          <div id="bookingSuccessNotice" class="sjb-success-toast" style="display: none;">
+            ✨ <strong>Inscrição confirmada!</strong> Deus abençoe sua hora de adoração no Cerco de Jericó.
+          </div>
+
+          <!-- Inline Booking Form -->
+          <form id="bookingForm" class="sjb-booking-form">
+            <div class="sjb-form-row">
+              <div class="sjb-field">
+                <label for="adorerName">Seu Nome *</label>
+                <input type="text" id="adorerName" placeholder="Ex: Maria da Silva" required autocomplete="name">
+              </div>
+            </div>
+            <div class="sjb-field">
+              <label for="adorerIntention">Pedido de Oração / Intenção <span class="sjb-optional">(opcional)</span></label>
+              <textarea id="adorerIntention" rows="2" placeholder="Deixe uma intenção para ser rezada neste horário..."></textarea>
+            </div>
+            <button type="submit" class="sjb-btn sjb-btn-primary sjb-btn-block" id="bookingSubmitBtn">
+              ✅ Confirmar Adoração neste Horário
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </section>
+
+  </main>
+
+  <footer class="sjb-footer">
+    <p><strong>Cerco de Jericó — Adoração Dia e Noite</strong> · Paróquia São José (São José do Barreiro - SP)</p>
+    <p class="sjb-footer-sub">“Eu e minha casa serviremos ao Senhor.” (Js 24,15)</p>
+  </footer>
+
+  <!-- Poster Lightbox Modal -->
+  <div class="modal-overlay" id="posterModal">
+    <div class="modal-card modal-poster">
+      <div class="modal-header">
+        <h3>Cerco de Jericó — 15 a 22 de Novembro</h3>
+        <button class="close-btn" id="closePosterModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 12px; text-align: center; background: #0b224a;">
+        <img src="assets/cerco-jerico-sjb.jpg" alt="Cartaz Cerco de Jericó" style="max-width: 100%; max-height: 75vh; border-radius: 8px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Quote Edit Dialog (Admin Only) -->
+  <div class="modal-overlay" id="quoteModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Editar Frase de Oração</h3>
+        <button class="close-btn" id="closeQuoteModalBtn">&times;</button>
+      </div>
+      <form id="quoteForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editQuoteText">Frase de Inspiração *</label>
+            <textarea id="editQuoteText" rows="3" required placeholder="Digite a frase inspiradora..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editQuoteAuthor">Autor / Referência *</label>
+            <input type="text" id="editQuoteAuthor" required placeholder="Ex: Js 24,15">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="sjb-btn sjb-btn-outline" id="cancelQuoteModalBtn">Cancelar</button>
+          <button type="submit" class="sjb-btn sjb-btn-primary">Salvar Frase</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Printable Sheet View -->
+  <div class="printable-sheet" id="printableSheet">
+    <div style="text-align: center; border-bottom: 2px solid #0b224a; padding-bottom: 12px; margin-bottom: 15px;">
+      <img src="assets/custodia.jpg" alt="Logo" class="sheet-header-img">
+      <h2 style="font-family: 'Cinzel', serif; font-size: 22px; color: #0b224a; margin-top: 6px; text-transform: uppercase;">
+        Cerco de Jericó — Adoração ao Santíssimo</h2>
+      <p style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: #13356e;">
+        Paróquia São José — São José do Barreiro (SP) · 15 a 22 de Novembro</p>
+      <p style="font-weight: bold; margin-top: 6px; font-size: 14px;">Data: <span id="printDateLabel"></span></p>
+    </div>
+
+    <table class="sheet-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Horário</th>
+          <th style="width: 75%;">Adoradores Inscritos</th>
+        </tr>
+      </thead>
+      <tbody id="printTableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="js/sjb.js"></script>
+</body>
+
+</html>
